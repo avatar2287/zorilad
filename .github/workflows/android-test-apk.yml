@@ -36,6 +36,8 @@ jobs:
         run: npm run typecheck
       - name: Lint
         run: npm run lint -- --max-warnings=4
+      - name: Full test suite
+        run: npm test
       - name: Build mobile bundle
         run: npm run build:mobile
       - name: Prepare Android project
