@@ -33,7 +33,8 @@ jobs:
         run: |
           npm ci
           npm run typecheck
-          npm run lint -- --max-warnings=4
+          npm run lint -- --max-warnings=0
+          npm test
           npm run build:mobile
           node scripts/setup-android.mjs
           cd android
