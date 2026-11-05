@@ -22,8 +22,8 @@
     "build:mobile": "vite build --config vite.mobile.config.ts",
     "android:sync": "npm run build:mobile && cap sync android",
     "android:setup": "npm run build:mobile && node scripts/setup-android.mjs",
-    "test:app": "node --test scripts/browser-smoke-verdict.test.mjs scripts/migration-plan.test.mjs scripts/preview.test.mjs scripts/sign-out-plan.test.mjs scripts/write-atomic.test.mjs && node --experimental-strip-types --test src/lib/app-data/app-data.test.ts src/lib/app-data/readiness-schedule.test.ts src/lib/auth/gate-identity.test.ts src/lib/auth/sign-in-gate.test.ts src/lib/preview-path-prefix.test.ts",
-    "test:legacy-template": "node --test scripts/brand-check.test.mjs scripts/check-auth-invariant.test.mjs scripts/grok-pwa-plugin.test.mjs scripts/with-app-env.test.mjs"
+    "test:app": "node --test scripts/browser-smoke-verdict.test.mjs scripts/migration-plan.test.mjs scripts/preview.test.mjs scripts/sign-out-plan.test.mjs && node --experimental-strip-types --test src/lib/app-data/app-data.test.ts src/lib/app-data/readiness-schedule.test.ts src/lib/auth/gate-identity.test.ts src/lib/auth/sign-in-gate.test.ts src/lib/preview-path-prefix.test.ts",
+    "test:legacy-template": "node --test scripts/brand-check.test.mjs scripts/check-auth-invariant.test.mjs scripts/grok-pwa-plugin.test.mjs scripts/with-app-env.test.mjs scripts/write-atomic.test.mjs"
   },
   "dependencies": {
     "@capacitor/android": "^8.6.0",
