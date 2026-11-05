@@ -137,7 +137,7 @@ function Gate({
     };
     video.playbackRate = 1;
     video.addEventListener("timeupdate", stop);
-    void video.play();
+    void video.play().catch(() => { /* Static poster remains available. */ });
     return () => video.removeEventListener("timeupdate", stop);
   }, []);
 
@@ -288,12 +288,13 @@ function Rift({ id }: { id: (typeof scrolls)[number]["id"] }) {
   );
 }
 
-function Home({ lang, onLang, play }: { lang: Lang; onLang: (lang: Lang) => void; play: boolean }) {
+function Home({ lang, onLang, play, testMode = false }: { lang: Lang; onLang: (lang: Lang) => void; play: boolean; testMode?: boolean }) {
   const text = copy[lang];
   const [focus, setFocus] = useState<(typeof scrolls)[number]["id"] | null>(null);
   const [page, setPage] = useState<"water" | "fire" | "wood" | "earth" | "ether" | null>(null);
   const [owned, setOwned] = useState(false);
   const [pay, setPay] = useState(false);
+  const accessKey = testMode ? "zorilad-test-ether" : "zorilad-ether";
   const order = ["water", "fire", "earth", "wood", "metal"] as const;
   const sub = {
     water: text.waterSub,
@@ -304,8 +305,8 @@ function Home({ lang, onLang, play }: { lang: Lang; onLang: (lang: Lang) => void
   };
 
   useEffect(() => {
-    setOwned(window.localStorage.getItem("zorilad-ether") === "1");
-  }, []);
+    try { setOwned(window.localStorage.getItem(accessKey) === "1"); } catch { /* Session-only if storage is unavailable. */ }
+  }, [accessKey]);
 
   return (
     <div className={`relative h-dvh overflow-hidden bg-[#05070b] text-moon ${focus ? "is-choosing" : ""}`}>
@@ -347,7 +348,7 @@ function Home({ lang, onLang, play }: { lang: Lang; onLang: (lang: Lang) => void
             >
               <span className={`cell-live live-${id}`}>
                 <img src={scroll.image} alt="" />
-                {play ? (
+                {play && page === null ? (
                   <video
                     src={`/neidan/${id}-loop.mp4?v=3`}
                     autoPlay
@@ -363,7 +364,7 @@ function Home({ lang, onLang, play }: { lang: Lang; onLang: (lang: Lang) => void
               <span className={`plaque plaque-${id}`}>
                 <span className="plaque-title">{text[id]}</span>
                 <span className="plaque-sub">{sub[id]}</span>
-                {id === "metal" ? <span className="plaque-price">{text.access}</span> : null}
+                {id === "metal" ? <span className="plaque-price">{testMode ? "TEST • Demo" : text.access}</span> : null}
               </span>
             </button>
           );
@@ -404,8 +405,9 @@ function Home({ lang, onLang, play }: { lang: Lang; onLang: (lang: Lang) => void
           lang={lang}
           onLang={onLang}
           owned={owned}
+          testMode={testMode}
           onUnlock={() => {
-            window.localStorage.setItem("zorilad-ether", "1");
+            try { window.localStorage.setItem(accessKey, "1"); } catch { /* Keep access for this session. */ }
             setOwned(true);
           }}
           onClose={() => setPage(null)}
@@ -440,7 +442,7 @@ function Home({ lang, onLang, play }: { lang: Lang; onLang: (lang: Lang) => void
               type="button"
               className="sheet-ok"
               onClick={() => {
-                window.localStorage.setItem("zorilad-ether", "1");
+                try { window.localStorage.setItem(accessKey, "1"); } catch { /* Keep access for this session. */ }
                 setOwned(true);
                 setPay(false);
               }}
@@ -476,24 +478,26 @@ function ScrollView({ id, lang, onClose }: { id: string; lang: Lang; onClose: ()
   );
 }
 
-export function NeiDanShell() {
+export function NeiDanShell({ testMode = false }: { testMode?: boolean } = {}) {
   const [entered, setEntered] = useState(false);
   const [lang, setLang] = useState<Lang>("ru");
 
   useEffect(() => {
-    const saved = window.localStorage.getItem("zorilad-lang");
-    if (saved === "en" || saved === "ru") setLang(saved);
+    try {
+      const saved = window.localStorage.getItem("zorilad-lang");
+      if (saved === "en" || saved === "ru") setLang(saved);
+    } catch { /* Default language remains usable. */ }
   }, []);
 
   function choose(next: Lang) {
     setLang(next);
-    window.localStorage.setItem("zorilad-lang", next);
+    try { window.localStorage.setItem("zorilad-lang", next); } catch { /* Session-only preference. */ }
   }
 
   return (
     <div className="relative h-dvh overflow-hidden bg-night">
       {entered ? (
-        <Home lang={lang} onLang={choose} play />
+        <Home lang={lang} onLang={choose} play testMode={testMode} />
       ) : (
         <Gate lang={lang} onLang={choose} onEnter={() => setEntered(true)} />
       )}

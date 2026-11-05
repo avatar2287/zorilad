@@ -11,3 +11,9 @@ dist
 artifacts
 attachments
 screenshots
+
+dist-mobile/
+
+/android/
+*.jks
+*.keystore

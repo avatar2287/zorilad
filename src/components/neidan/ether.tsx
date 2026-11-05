@@ -199,12 +199,14 @@ export function EtherScreen({
   lang,
   onLang,
   owned,
+  testMode = false,
   onUnlock,
   onClose,
 }: {
   lang: LoreLang;
   onLang: (lang: LoreLang) => void;
   owned: boolean;
+  testMode?: boolean;
   onUnlock: () => void;
   onClose: () => void;
 }) {
@@ -288,7 +290,7 @@ export function EtherScreen({
               </p>
             ))}
             <button type="button" className="ether-buy" onClick={onUnlock}>
-              {text.buy}
+              {testMode ? (lang === "ru" ? "Открыть демо — бесплатно" : "Open demo — free") : text.buy}
             </button>
           </article>
         )}
