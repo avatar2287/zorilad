@@ -42,7 +42,7 @@ jobs:
           cd ..
           cp android/app/build/outputs/apk/debug/app-debug.apk /tmp/ZORILAD-test.apk
           unzip -t /tmp/ZORILAD-test.apk
-          sha256sum /tmp/ZORILAD-test.apk > /tmp/ZORILAD-test.sha256
+          sha256sum /tmp/ZORILAD-test.apk > /tmp/ZORILAD-test.sha256\n          cd /tmp && zip -9 ZORILAD-test.zip ZORILAD-test.apk && cd -
       - name: Publish raw download branch
         run: |
           git config user.name "github-actions[bot]"
@@ -50,8 +50,8 @@ jobs:
           git checkout --orphan apk-download
           git rm -rf .
           cp /tmp/ZORILAD-test.apk ./ZORILAD-test.apk
-          cp /tmp/ZORILAD-test.sha256 ./ZORILAD-test.sha256
+          cp /tmp/ZORILAD-test.sha256 ./ZORILAD-test.sha256\n          cp /tmp/ZORILAD-test.zip ./ZORILAD-test.zip
           printf '# ZORILAD test APK\n\nDebug test build. No real payments.\n' > README.md
-          git add ZORILAD-test.apk ZORILAD-test.sha256 README.md
+          git add ZORILAD-test.apk ZORILAD-test.sha256 ZORILAD-test.zip README.md
           git commit -m "Publish mobile-fixed ZORILAD test APK"
           git push --force origin HEAD:apk-download
