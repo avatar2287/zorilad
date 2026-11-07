@@ -1,4 +1,4 @@
-import { existsSync, readFileSync, writeFileSync, rmSync } from 'node:fs';
+import { cpSync, existsSync, readFileSync, writeFileSync, rmSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { spawnSync } from 'node:child_process';
@@ -19,11 +19,17 @@ if (!existsSync(join(root, 'android'))) run('add', 'android');
 rmSync(join(root, 'android/app/src/main/assets/public'), { recursive: true, force: true });
 run('sync', 'android');
 
+cpSync(join(root, 'mobile/android-res'), join(root, 'android/app/src/main/res'), { recursive: true });
+
 const manifest = join(root, 'android/app/src/main/AndroidManifest.xml');
 let xml = readFileSync(manifest, 'utf8').replace('android:allowBackup="true"', 'android:allowBackup="false"');
 if (!xml.includes('android:usesCleartextTraffic=')) {
   xml = xml.replace('<application', '<application android:usesCleartextTraffic="false"');
 }
+xml = xml
+  .replace('@mipmap/ic_launcher_round', '@drawable/zorilad_launcher')
+  .replace('@mipmap/ic_launcher', '@drawable/zorilad_launcher')
+  .replace('@style/AppTheme.NoActionBarLaunch', '@style/ZoriladLaunch');
 writeFileSync(manifest, xml);
 
 const wrapper = join(root, 'android/gradle/wrapper/gradle-wrapper.properties');

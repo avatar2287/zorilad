@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:aapt="http://schemas.android.com/aapt"
+    android:width="108dp" android:height="108dp"
+    android:viewportWidth="108" android:viewportHeight="108">
+    <!-- An obsidian medallion, with two dragons facing the star between them. -->
+    <path android:fillColor="#0A111B" android:pathData="M54,21 A33,33 0,1 1,54 87 A33,33 0,1 1,54 21 Z" />
+    <path android:strokeColor="#829CA9" android:strokeWidth="1.2" android:strokeLineCap="round"
+        android:pathData="M52,21 A33,33 0,0 0,52 87" />
+    <path android:strokeColor="#BA8750" android:strokeWidth="1.2" android:strokeLineCap="round"
+        android:pathData="M56,21 A33,33 0,0 1,56 87" />
+    <path android:strokeColor="#2F3B46" android:strokeWidth="0.7"
+        android:pathData="M54,24 A30,30 0,1 1,54 84 A30,30 0,1 1,54 24 Z" />
+    <path android:pathData="M52,76 C36,77 27,65 29,52 C30,45 34,39 40,36 L35,30 C41,30 45,33 46,38 L51,42 L49,46 L42,45 C36,51 36,60 41,65 C44,69 48,71 52,70 L49,73 Z">
+        <aapt:attr name="android:fillColor">
+            <gradient android:startX="33" android:startY="31" android:endX="49" android:endY="76"
+                android:startColor="#D6F4FB" android:centerColor="#82ADCB" android:endColor="#355575" />
+        </aapt:attr>
+    </path>
+    <path android:pathData="M56,76 C72,77 81,65 79,52 C78,45 74,39 68,36 L73,30 C67,30 63,33 62,38 L57,42 L59,46 L66,45 C72,51 72,60 67,65 C64,69 60,71 56,70 L59,73 Z">
+        <aapt:attr name="android:fillColor">
+            <gradient android:startX="75" android:startY="31" android:endX="59" android:endY="76"
+                android:startColor="#FFDF9E" android:centerColor="#CE9451" android:endColor="#8C472B" />
+        </aapt:attr>
+    </path>
+    <path android:fillColor="#F8E8C9" android:pathData="M54,46 L56,52 L62,54 L56,56 L54,63 L52,56 L46,54 L52,52 Z" />
+    <path android:fillColor="#142636" android:pathData="M43,39 L47,40 L44,42 Z" />
+    <path android:fillColor="#472815" android:pathData="M65,39 L61,40 L64,42 Z" />
+</vector>

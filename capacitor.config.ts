@@ -5,7 +5,7 @@ const config: CapacitorConfig = {
   appName: 'ZORILAD',
   webDir: 'dist-mobile',
   server: { androidScheme: 'https', cleartext: false },
-  android: { allowMixedContent: false, webContentsDebuggingEnabled: false },
+  android: { backgroundColor: '#05070b', allowMixedContent: false, webContentsDebuggingEnabled: false },
 };
 
 export default config;

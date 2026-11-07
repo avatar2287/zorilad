@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="zorilad_night">#05070B</color>
+    <style name="ZoriladLaunch" parent="Theme.SplashScreen">
+        <item name="windowSplashScreenBackground">@color/zorilad_night</item>
+        <item name="windowSplashScreenAnimatedIcon">@drawable/zorilad_emblem</item>
+        <item name="postSplashScreenTheme">@style/AppTheme.NoActionBar</item>
+        <item name="android:windowBackground">@color/zorilad_night</item>
+        <item name="android:windowLightStatusBar">false</item>
+    </style>
+</resources>
