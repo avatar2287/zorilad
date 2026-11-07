@@ -1,0 +1,77 @@
+name: ZORILAD Android validation and owner review APK
+
+on:
+  push:
+    branches:
+      - audit/android-test-2026-11-05
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  verify-and-build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Set up Node.js
+        uses: actions/setup-node@v5
+        with:
+          node-version: 22
+          cache: npm
+      - name: Set up Java
+        uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: 21
+      - name: Install Android SDK 36
+        run: |
+          yes | "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" --licenses >/dev/null || true
+          "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" "platform-tools" "platforms;android-36" "build-tools;36.0.0"
+      - name: Install dependencies
+        run: npm ci
+      - name: TypeScript
+        run: npm run typecheck
+      - name: Lint
+        run: npm run lint -- --max-warnings=4
+      - name: Full test suite
+        run: npm test
+      - name: Build mobile bundle
+        run: npm run build:mobile
+      - name: Prepare Android project
+        run: node scripts/setup-android.mjs
+      - name: Build Play preparation bundle (unsigned)
+        working-directory: android
+        run: ./gradlew bundleRelease --no-daemon
+      - name: Upload Play preparation bundle
+        uses: actions/upload-artifact@v4
+        with:
+          name: ZORILAD-play-preparation-unsigned
+          path: android/app/build/outputs/bundle/release/app-release.aab
+      - name: Prepare owner review build
+        env:
+          VITE_OWNER_REVIEW: 'true'
+        run: |
+          rm -rf android
+          npm run build:mobile
+          node scripts/setup-android.mjs
+      - name: Build debug APK
+        working-directory: android
+        run: ./gradlew assembleDebug --no-daemon
+      - name: Verify APK
+        run: |
+          test -s android/app/build/outputs/apk/debug/app-debug.apk
+          unzip -t android/app/build/outputs/apk/debug/app-debug.apk
+          sha256sum android/app/build/outputs/apk/debug/app-debug.apk | tee ZORILAD-owner.sha256
+          cp android/app/build/outputs/apk/debug/app-debug.apk ZORILAD-owner.apk
+      - name: Upload APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: ZORILAD-owner-apk
+          path: |
+            ZORILAD-owner.apk
+            ZORILAD-owner.sha256
+          if-no-files-found: error
+          retention-days: 14

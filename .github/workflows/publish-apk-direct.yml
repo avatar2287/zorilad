@@ -1,0 +1,59 @@
+name: Publish direct APK file
+
+on:
+  push:
+    branches:
+      - audit/android-test-2026-11-05
+    paths:
+      - .github/workflows/publish-apk-direct.yml
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 22
+          cache: npm
+      - uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: 21
+      - name: Install Android SDK 36
+        run: |
+          yes | "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" --licenses >/dev/null || true
+          "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" "platform-tools" "platforms;android-36" "build-tools;36.0.0"
+      - name: Build verified APK
+        run: |
+          npm ci
+          npm run typecheck
+          npm run lint -- --max-warnings=0
+          npm test
+          npm run build:mobile
+          node scripts/setup-android.mjs
+          cd android
+          ./gradlew assembleDebug --no-daemon
+          cd ..
+          cp android/app/build/outputs/apk/debug/app-debug.apk /tmp/ZORILAD-test.apk
+          unzip -t /tmp/ZORILAD-test.apk
+          sha256sum /tmp/ZORILAD-test.apk > /tmp/ZORILAD-test.sha256
+          cd /tmp && zip -9 ZORILAD-test.zip ZORILAD-test.apk && cd -
+      - name: Publish raw download branch
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git checkout --orphan apk-download
+          git rm -rf .
+          cp /tmp/ZORILAD-test.apk ./ZORILAD-test.apk
+          cp /tmp/ZORILAD-test.sha256 ./ZORILAD-test.sha256
+          cp /tmp/ZORILAD-test.zip ./ZORILAD-test.zip
+          printf '# ZORILAD test APK\n\nDebug test build. No real payments.\n' > README.md
+          git add ZORILAD-test.apk ZORILAD-test.sha256 ZORILAD-test.zip README.md
+          git commit -m "Publish mobile-fixed ZORILAD test APK"
+          git push --force origin HEAD:apk-download

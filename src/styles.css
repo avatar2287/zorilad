@@ -3709,3 +3709,106 @@ button.water-next {
   margin: 0 0 0.75rem;
   border: 1px solid rgba(220, 200, 150, 0.22);
 }
+
+
+/* ZORILAD mobile viewport hardening */
+.mobile-shell {
+  --test-banner-height: 0px;
+  --app-top: var(--safe-area-inset-top, env(safe-area-inset-top, 0px));
+  --app-bottom: var(--safe-area-inset-bottom, env(safe-area-inset-bottom, 0px));
+  --app-left: var(--safe-area-inset-left, env(safe-area-inset-left, 0px));
+  --app-right: var(--safe-area-inset-right, env(safe-area-inset-right, 0px));
+  width: 100%;
+  height: 100dvh;
+  box-sizing: border-box;
+  padding: var(--app-top) var(--app-right) var(--app-bottom) var(--app-left);
+  overflow: hidden;
+  overscroll-behavior: none;
+  background: #05070b;
+  touch-action: manipulation;
+}
+/* Every nested scene inherits the available height, rather than restarting 100dvh. */
+.mobile-shell .h-dvh {
+  height: 100%;
+  min-height: 0;
+}
+.mobile-shell .water-screen,
+.mobile-shell .fire-screen,
+.mobile-shell .wood-screen,
+.mobile-shell .earth-screen,
+.mobile-shell .ether-screen,
+.mobile-shell .prologue,
+.mobile-shell .sheet {
+  top: var(--app-top);
+  right: var(--app-right);
+  bottom: var(--app-bottom);
+  left: var(--app-left);
+}
+.mobile-shell .safe-top { padding-top: 0.75rem; }
+.mobile-shell .safe-bottom { padding-bottom: 1.25rem; }
+.mobile-shell .water-scroll {
+  scrollbar-width: thin;
+  overscroll-behavior-y: contain;
+  -webkit-overflow-scrolling: touch;
+}
+.mobile-shell button {
+  min-width: 0;
+  touch-action: manipulation;
+}
+.mobile-shell .five {
+  width: 100%;
+  height: 100%;
+}
+.mobile-shell .cell-metal {
+  width: min(50vw, 34dvh);
+  min-width: 7.25rem;
+  max-width: 13rem;
+}
+.mobile-shell .cell-metal .plaque {
+  width: 150%;
+}
+.mobile-shell .plaque-title,
+.mobile-shell .plaque-sub,
+.mobile-shell .plaque-price {
+  overflow-wrap: anywhere;
+}
+.mobile-shell .sheet-card,
+.mobile-shell .prologue-card {
+  max-width: calc(100vw - max(2rem, env(safe-area-inset-left) + env(safe-area-inset-right)));
+}
+.mobile-shell .gate-dock {
+  padding-right: max(1.25rem, env(safe-area-inset-right));
+  padding-left: max(1.25rem, env(safe-area-inset-left));
+}
+
+@media (max-width: 380px), (max-height: 700px) {
+  .mobile-shell .zorilad { font-size: clamp(2.2rem, 12vw, 3rem); }
+  .mobile-shell .gate-dock { padding-bottom: max(1rem, env(safe-area-inset-bottom)); }
+  .mobile-shell .glow-text { margin-bottom: 0.65rem; font-size: 1rem; }
+  .mobile-shell .enter-btn { height: 2.85rem; }
+  .mobile-shell .plaque { left: 5%; right: 5%; padding: 0.32rem 0.38rem; }
+  .mobile-shell .plaque-title { font-size: 0.8rem; letter-spacing: 0.1em; }
+  .mobile-shell .plaque-sub { font-size: 0.6rem; }
+  .mobile-shell .plaque-price { margin-top: 0.2rem; font-size: 0.56rem; }
+  .mobile-shell .cell-metal { width: min(48vw, 32dvh); min-width: 6.6rem; }
+  .mobile-shell .cell-metal .plaque { width: 142%; }
+  .mobile-shell .cell-metal .plaque-title { letter-spacing: 0.15em; }
+  .mobile-shell .water-bar { padding-bottom: 0.4rem; }
+  .mobile-shell .water-scroll h1 { font-size: 1.65rem; }
+  .mobile-shell .water-card p,
+  .mobile-shell .ether-card p { font-size: 0.9rem; line-height: 1.55; }
+}
+
+@media (orientation: landscape) and (max-height: 560px) {
+  .mobile-shell .zorilad { top: 2%; font-size: clamp(1.8rem, 8vh, 2.6rem); }
+  .mobile-shell .gate-dock { max-width: 31rem; padding-top: 2rem; padding-bottom: max(0.65rem, env(safe-area-inset-bottom)); }
+  .mobile-shell .glow-text { margin-bottom: 0.45rem; font-size: 0.95rem; }
+  .mobile-shell .enter-btn { height: 2.6rem; }
+  .mobile-shell .cell-metal { width: min(30vw, 54dvh); min-width: 6.4rem; }
+  .mobile-shell .plaque-water,
+  .mobile-shell .plaque-fire { top: 9%; }
+  .mobile-shell .plaque-earth,
+  .mobile-shell .plaque-wood { bottom: 5%; }
+  .mobile-shell .prologue { place-items: center; }
+  .mobile-shell .prologue-card { max-height: calc(100dvh - var(--test-banner-height) - 1rem); margin-bottom: 0; }
+}

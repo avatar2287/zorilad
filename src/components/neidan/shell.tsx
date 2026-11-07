@@ -72,13 +72,6 @@ const scrolls = [
   { id: "metal", image: "/neidan/metal.jpg?v=5" },
 ] as const;
 
-const places = {
-  water: "arc-water",
-  wood: "arc-wood",
-  fire: "arc-fire",
-  earth: "arc-earth",
-  metal: "arc-metal",
-} as const;
 
 function LangToggle({ lang, onChange }: { lang: Lang; onChange: (lang: Lang) => void }) {
   return (
@@ -132,22 +125,20 @@ function Gate({
   useEffect(() => {
     const video = videoRef.current;
     if (!video) return;
-    const stop = () => {
+    const holdLastFrame = () => {
       if (video.currentTime >= 9.8) video.pause();
     };
-    video.playbackRate = 1;
-    video.addEventListener("timeupdate", stop);
-    void video.play();
-    return () => video.removeEventListener("timeupdate", stop);
+    video.addEventListener("timeupdate", holdLastFrame);
+    void video.play().catch(() => { /* Keep the first frame when autoplay is unavailable. */ });
+    return () => video.removeEventListener("timeupdate", holdLastFrame);
   }, []);
 
   return (
     <div className="relative h-dvh overflow-hidden bg-night text-moon">
-      <img src="/neidan/gate.jpg?v=35" alt="" fetchPriority="high" className="absolute inset-0 h-full w-full object-cover" />
       <video
         ref={videoRef}
+        poster="/neidan/gate-first.jpg"
         src="/neidan/gate.mp4?v=38"
-        autoPlay
         muted
         playsInline
         className="absolute inset-0 h-full w-full object-cover"
@@ -175,125 +166,12 @@ function Gate({
   );
 }
 
-function Starfield() {
-  const ref = useRef<HTMLCanvasElement>(null);
-
-  useEffect(() => {
-    const canvas = ref.current;
-    if (!canvas) return;
-    const ctx = canvas.getContext("2d");
-    if (!ctx) return;
-    const stars = Array.from({ length: 160 }, () => ({
-      x: Math.random() * 2 - 1,
-      y: Math.random() * 2 - 1,
-      z: Math.random(),
-    }));
-    let frame = 0;
-    const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-
-    const paint = (moving: boolean) => {
-      const width = canvas.clientWidth;
-      const height = canvas.clientHeight;
-      const ratio = window.devicePixelRatio || 1;
-      if (canvas.width !== Math.floor(width * ratio) || canvas.height !== Math.floor(height * ratio)) {
-        canvas.width = Math.floor(width * ratio);
-        canvas.height = Math.floor(height * ratio);
-      }
-      ctx.setTransform(ratio, 0, 0, ratio, 0, 0);
-      ctx.clearRect(0, 0, width, height);
-      const cx = width / 2;
-      const cy = height / 2;
-      for (const star of stars) {
-        const prev = star.z + 0.018;
-        if (moving) star.z -= 0.007;
-        if (star.z <= 0.04) {
-          star.x = Math.random() * 2 - 1;
-          star.y = Math.random() * 2 - 1;
-          star.z = 1;
-        }
-        const project = (z: number) => {
-          const depth = 0.16 / z;
-          return [cx + star.x * depth * width, cy + star.y * depth * height] as const;
-        };
-        const [px, py] = project(star.z);
-        const [ox, oy] = project(Math.min(1, prev));
-        const alpha = 0.2 + (1 - star.z) * 0.75;
-        ctx.strokeStyle = `rgba(214, 224, 240, ${alpha})`;
-        ctx.lineWidth = Math.max(0.6, (1 - star.z) * 1.8);
-        ctx.beginPath();
-        ctx.moveTo(ox, oy);
-        ctx.lineTo(px, py);
-        ctx.stroke();
-      }
-    };
-
-    paint(false);
-    if (reduce) return;
-    const loop = () => {
-      paint(true);
-      frame = requestAnimationFrame(loop);
-    };
-    frame = requestAnimationFrame(loop);
-    return () => cancelAnimationFrame(frame);
-  }, []);
-
-  return <canvas ref={ref} className="pointer-events-none absolute inset-0 h-full w-full opacity-50" />;
-}
-
-function Rift({ id }: { id: (typeof scrolls)[number]["id"] }) {
-  const common = { fill: "none", strokeLinecap: "round" as const, strokeWidth: 1.4 };
-  if (id === "water") {
-    return (
-      <svg viewBox="0 0 40 96" className="rift-svg rift-water">
-        <path {...common} d="M6 28c8 4 14-6 26 0" />
-        <path {...common} d="M4 46c10 8 14-8 30 2" />
-        <path {...common} d="M8 66c8-6 16 10 24-2" />
-      </svg>
-    );
-  }
-  if (id === "wood") {
-    return (
-      <svg viewBox="0 0 40 96" className="rift-svg rift-wood">
-        <path {...common} d="M20 86V18" />
-        <path {...common} d="M20 40c-8-2-12-10-14-16" />
-        <path {...common} d="M20 48c8-1 12-8 14-14" />
-        <path {...common} d="M20 62c-6 0-10-6-12-10" />
-      </svg>
-    );
-  }
-  if (id === "fire") {
-    return (
-      <svg viewBox="0 0 40 96" className="rift-svg rift-fire">
-        <path {...common} d="M20 10c2 16-6 20 0 34s-2 18 0 42" />
-        <path {...common} d="M14 40c4 6 8 4 10 12" />
-        <path {...common} d="M26 48c-4 6-6 8-4 16" />
-      </svg>
-    );
-  }
-  if (id === "earth") {
-    return (
-      <svg viewBox="0 0 40 96" className="rift-svg rift-earth">
-        <path {...common} d="M20 16l8 14-8 8-8-8z" />
-        <path {...common} d="M12 48l8 10 8-10-8-6z" />
-        <path {...common} d="M20 58v22" />
-      </svg>
-    );
-  }
-  return (
-    <svg viewBox="0 0 40 96" className="rift-svg rift-metal">
-      <path {...common} d="M12 14v68" />
-      <path {...common} d="M20 10v76" />
-      <path {...common} d="M28 18v60" />
-    </svg>
-  );
-}
-
-function Home({ lang, onLang, play }: { lang: Lang; onLang: (lang: Lang) => void; play: boolean }) {
+function Home({ lang, onLang, play, ownerReview = false }: { lang: Lang; onLang: (lang: Lang) => void; play: boolean; ownerReview?: boolean }) {
   const text = copy[lang];
   const [focus, setFocus] = useState<(typeof scrolls)[number]["id"] | null>(null);
   const [page, setPage] = useState<"water" | "fire" | "wood" | "earth" | "ether" | null>(null);
-  const [owned, setOwned] = useState(false);
-  const [pay, setPay] = useState(false);
+  // Never trust legacy localStorage demo/purchase flags.
+  const owned = ownerReview;
   const order = ["water", "fire", "earth", "wood", "metal"] as const;
   const sub = {
     water: text.waterSub,
@@ -303,9 +181,6 @@ function Home({ lang, onLang, play }: { lang: Lang; onLang: (lang: Lang) => void
     metal: owned ? text.metalOpen : text.metalSub,
   };
 
-  useEffect(() => {
-    setOwned(window.localStorage.getItem("zorilad-ether") === "1");
-  }, []);
 
   return (
     <div className={`relative h-dvh overflow-hidden bg-[#05070b] text-moon ${focus ? "is-choosing" : ""}`}>
@@ -347,7 +222,7 @@ function Home({ lang, onLang, play }: { lang: Lang; onLang: (lang: Lang) => void
             >
               <span className={`cell-live live-${id}`}>
                 <img src={scroll.image} alt="" />
-                {play ? (
+                {play && page === null ? (
                   <video
                     src={`/neidan/${id}-loop.mp4?v=3`}
                     autoPlay
@@ -363,7 +238,7 @@ function Home({ lang, onLang, play }: { lang: Lang; onLang: (lang: Lang) => void
               <span className={`plaque plaque-${id}`}>
                 <span className="plaque-title">{text[id]}</span>
                 <span className="plaque-sub">{sub[id]}</span>
-                {id === "metal" ? <span className="plaque-price">{text.access}</span> : null}
+                {id === "metal" ? <span className="plaque-price">{owned ? text.bought : (lang === "ru" ? "🔒 Полный доступ" : "🔒 Full access")}</span> : null}
               </span>
             </button>
           );
@@ -404,10 +279,6 @@ function Home({ lang, onLang, play }: { lang: Lang; onLang: (lang: Lang) => void
           lang={lang}
           onLang={onLang}
           owned={owned}
-          onUnlock={() => {
-            window.localStorage.setItem("zorilad-ether", "1");
-            setOwned(true);
-          }}
           onClose={() => setPage(null)}
         />
       ) : null}
@@ -430,70 +301,31 @@ function Home({ lang, onLang, play }: { lang: Lang; onLang: (lang: Lang) => void
           </button>
         </div>
       ) : null}
-      {pay ? (
-        <div className="sheet" role="dialog">
-          <button type="button" className="sheet-scrim" aria-label={text.later} onClick={() => setPay(false)} />
-          <div className="sheet-card">
-            <h2 className="font-display text-2xl leading-none">{text.metal}</h2>
-            <p className="mt-3 text-sm leading-relaxed text-paper">{text.access}</p>
-            <button
-              type="button"
-              className="sheet-ok"
-              onClick={() => {
-                window.localStorage.setItem("zorilad-ether", "1");
-                setOwned(true);
-                setPay(false);
-              }}
-            >
-              {text.buy}
-            </button>
-            <button type="button" className="glass-back mt-3" onClick={() => setPay(false)}>
-              {text.later}
-            </button>
-          </div>
-        </div>
-      ) : null}
+
     </div>
   );
 }
 
-function ScrollView({ id, lang, onClose }: { id: string; lang: Lang; onClose: () => void }) {
-  const scroll = scrolls.find((item) => item.id === id) ?? scrolls[0];
-  const text = copy[lang];
-  return (
-    <div className="unfurl fixed inset-0 z-30 overflow-hidden bg-night text-paper">
-      <img src={scroll.image} alt="" className="scroll-bg absolute inset-0 h-full w-full object-cover" />
-      <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-night/80 via-night/15 to-transparent" />
-      <div className="relative z-10 mx-auto flex h-dvh max-w-md flex-col px-6 safe-top safe-bottom">
-        <button type="button" onClick={onClose} className="mt-2 self-start text-sm text-moon">
-          {text.close}
-        </button>
-        <div className="mt-auto pb-10">
-          <h2 className="font-display text-6xl leading-none">{text[scroll.id]}</h2>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-export function NeiDanShell() {
+export function NeiDanShell({ ownerReview = false }: { ownerReview?: boolean } = {}) {
   const [entered, setEntered] = useState(false);
   const [lang, setLang] = useState<Lang>("ru");
 
   useEffect(() => {
-    const saved = window.localStorage.getItem("zorilad-lang");
-    if (saved === "en" || saved === "ru") setLang(saved);
+    try {
+      const saved = window.localStorage.getItem("zorilad-lang");
+      if (saved === "en" || saved === "ru") setLang(saved);
+    } catch { /* Default language remains usable. */ }
   }, []);
 
   function choose(next: Lang) {
     setLang(next);
-    window.localStorage.setItem("zorilad-lang", next);
+    try { window.localStorage.setItem("zorilad-lang", next); } catch { /* Session-only preference. */ }
   }
 
   return (
     <div className="relative h-dvh overflow-hidden bg-night">
       {entered ? (
-        <Home lang={lang} onLang={choose} play />
+        <Home lang={lang} onLang={choose} play ownerReview={ownerReview} />
       ) : (
         <Gate lang={lang} onLang={choose} onEnter={() => setEntered(true)} />
       )}
