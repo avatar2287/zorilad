@@ -29,31 +29,32 @@ jobs:
         run: |
           yes | "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" --licenses >/dev/null || true
           "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" "platform-tools" "platforms;android-36" "build-tools;36.0.0"
-      - name: Build verified owner APK
+      - name: Build verified public test APK
         run: |
           npm ci
+          npm audit --omit=dev --audit-level=high
           npm run typecheck
           npm run lint -- --max-warnings=0
           npm test
-          VITE_OWNER_REVIEW=true npm run build:mobile
+          npm run build:mobile
           node scripts/setup-android.mjs
           cd android
           ./gradlew assembleDebug --no-daemon
           cd ..
-          cp android/app/build/outputs/apk/debug/app-debug.apk /tmp/ZORILAD.apk
-          unzip -t /tmp/ZORILAD.apk
-          sha256sum /tmp/ZORILAD.apk > /tmp/ZORILAD.sha256
-          cd /tmp && zip -9 ZORILAD.zip ZORILAD.apk && cd -
+          cp android/app/build/outputs/apk/debug/app-debug.apk /tmp/ZORILAD-test.apk
+          unzip -t /tmp/ZORILAD-test.apk
+          sha256sum /tmp/ZORILAD-test.apk > /tmp/ZORILAD-test.sha256
+          cd /tmp && zip -9 ZORILAD-test.zip ZORILAD-test.apk && cd -
       - name: Publish direct downloads
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git checkout --orphan apk-download
           git rm -rf .
-          cp /tmp/ZORILAD.apk ./ZORILAD.apk
-          cp /tmp/ZORILAD.sha256 ./ZORILAD.sha256
-          cp /tmp/ZORILAD.zip ./ZORILAD.zip
-          printf '# ZORILAD owner APK\n\nLatest owner build with the colorful triple yin-yang launcher icon.\n' > README.md
-          git add ZORILAD.apk ZORILAD.sha256 ZORILAD.zip README.md
-          git commit -m "Publish latest ZORILAD owner APK"
+          cp /tmp/ZORILAD-test.apk ./ZORILAD-test.apk
+          cp /tmp/ZORILAD-test.sha256 ./ZORILAD-test.sha256
+          cp /tmp/ZORILAD-test.zip ./ZORILAD-test.zip
+          printf '# ZORILAD test APK\n\nPublic test build. Ether stays locked until verified Play Billing is implemented.\n' > README.md
+          git add ZORILAD-test.apk ZORILAD-test.sha256 ZORILAD-test.zip README.md
+          git commit -m "Publish latest ZORILAD public test APK"
           git push --force origin HEAD:apk-download
