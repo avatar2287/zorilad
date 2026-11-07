@@ -1,5 +1,4 @@
 import { useEffect, useRef, useState } from "react";
-import { Volume2, VolumeX } from "lucide-react";
 import { Prologue, WaterScreen } from "@/components/neidan/water";
 import { FireScreen } from "@/components/neidan/fire";
 import { WoodScreen } from "@/components/neidan/wood";
@@ -122,75 +121,17 @@ function Gate({
 }) {
   const text = copy[lang];
   const videoRef = useRef<HTMLVideoElement>(null);
-  const audioRef = useRef<HTMLAudioElement>(null);
-  const [soundOn, setSoundOn] = useState(true);
-
-  function startSound() {
-    const video = videoRef.current;
-    const audio = audioRef.current;
-    if (!video || !audio || audio.muted || video.paused || document.hidden) return;
-    if (!audio.paused || (audio.duration && video.currentTime >= audio.duration)) return;
-    audio.currentTime = video.currentTime;
-    void audio.play().catch((error: unknown) => {
-      // Browsers may require a tap. The native WebView allows the intro to start on launch.
-      if (audioRef.current === audio && error instanceof DOMException && error.name === "NotAllowedError") {
-        audio.muted = true;
-        setSoundOn(false);
-      }
-    });
-  }
 
   useEffect(() => {
     const video = videoRef.current;
-    const audio = audioRef.current;
-    if (!video || !audio) return;
-    try {
-      audio.muted = window.localStorage.getItem("zorilad-intro-sound") === "off";
-      setSoundOn(!audio.muted);
-    } catch { /* Playback still works when storage is unavailable. */ }
-
-    const pauseSound = () => audio.pause();
-    const syncSound = () => {
+    if (!video) return;
+    const holdLastFrame = () => {
       if (video.currentTime >= 9.8) video.pause();
-      if (!audio.paused && Math.abs(audio.currentTime - video.currentTime) > 0.25) {
-        audio.currentTime = video.currentTime;
-      }
     };
-    const onVisibility = () => {
-      if (document.hidden) pauseSound();
-      else if (video.readyState >= HTMLMediaElement.HAVE_FUTURE_DATA) startSound();
-    };
-    video.addEventListener("playing", startSound);
-    video.addEventListener("timeupdate", syncSound);
-    const stopEvents = ["pause", "waiting", "seeking", "ended"];
-    for (const event of stopEvents) video.addEventListener(event, pauseSound);
-    document.addEventListener("visibilitychange", onVisibility);
+    video.addEventListener("timeupdate", holdLastFrame);
     void video.play().catch(() => { /* Keep the first frame when autoplay is unavailable. */ });
-    return () => {
-      pauseSound();
-      video.removeEventListener("playing", startSound);
-      video.removeEventListener("timeupdate", syncSound);
-      for (const event of stopEvents) video.removeEventListener(event, pauseSound);
-      document.removeEventListener("visibilitychange", onVisibility);
-    };
+    return () => video.removeEventListener("timeupdate", holdLastFrame);
   }, []);
-
-  function toggleSound() {
-    const video = videoRef.current;
-    const audio = audioRef.current;
-    if (!video || !audio) return;
-    const enabled = audio.muted;
-    audio.muted = !enabled;
-    setSoundOn(enabled);
-    try { window.localStorage.setItem("zorilad-intro-sound", enabled ? "on" : "off"); } catch { /* Session preference. */ }
-    if (!enabled) {
-      audio.pause();
-      return;
-    }
-    if (video.currentTime >= 9.8) video.currentTime = 0;
-    void video.play().catch(() => {});
-    startSound();
-  }
 
   return (
     <div className="relative h-dvh overflow-hidden bg-night text-moon">
@@ -202,16 +143,6 @@ function Gate({
         playsInline
         className="absolute inset-0 h-full w-full object-cover"
       />
-      <audio ref={audioRef} src="/neidan/gate-ambience.m4a" preload="auto" />
-      <button
-        type="button"
-        className="gate-sound"
-        aria-label={lang === "ru" ? "Звук приветствия" : "Intro sound"}
-        aria-pressed={soundOn}
-        onClick={toggleSound}
-      >
-        {soundOn ? <Volume2 size={17} aria-hidden /> : <VolumeX size={17} aria-hidden />}
-      </button>
       <div className="gate-fade pointer-events-none absolute inset-x-0 bottom-0" />
       <div className="flow-ice" />
       <div className="flow-fire" />

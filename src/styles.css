@@ -1679,21 +1679,6 @@
 .glow-text {
   text-shadow: 0 2px 16px rgb(11 16 22 / 0.8);
 }
-.gate-sound {
-  position: absolute;
-  top: calc(3.4rem + env(safe-area-inset-top, 0px));
-  right: 1.25rem;
-  z-index: 30;
-  display: grid;
-  place-items: center;
-  width: 2.75rem;
-  height: 2.75rem;
-  border: 1px solid rgb(215 230 240 / 0.22);
-  border-radius: 50%;
-  background: rgb(11 16 22 / 0.58);
-  color: #d7e6f0;
-}
-.mobile-shell .gate-sound { top: 3.4rem; }
 .gate-fade {
   height: 34%;
   background: linear-gradient(to top, rgb(8 12 18 / 0.88) 0%, rgb(8 12 18 / 0.4) 46%, transparent 100%);
