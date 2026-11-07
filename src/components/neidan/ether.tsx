@@ -199,15 +199,11 @@ export function EtherScreen({
   lang,
   onLang,
   owned,
-  testMode = false,
-  onUnlock,
   onClose,
 }: {
   lang: LoreLang;
   onLang: (lang: LoreLang) => void;
   owned: boolean;
-  testMode?: boolean;
-  onUnlock: () => void;
   onClose: () => void;
 }) {
   const text = etherChrome[lang];
@@ -289,9 +285,11 @@ export function EtherScreen({
                 {line}
               </p>
             ))}
-            <button type="button" className="ether-buy" onClick={onUnlock}>
-              {testMode ? (lang === "ru" ? "Открыть демо — бесплатно" : "Open demo — free") : text.buy}
-            </button>
+            <p role="status">
+              {lang === "ru"
+                ? "Покупки пока недоступны. Полный доступ появится после подключения Google Play."
+                : "Purchases are not available yet. Full access will be offered through Google Play."}
+            </p>
           </article>
         )}
       </div>

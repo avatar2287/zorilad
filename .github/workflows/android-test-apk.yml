@@ -1,4 +1,4 @@
-name: ZORILAD Android test APK
+name: ZORILAD Android validation and owner review APK
 
 on:
   push:
@@ -42,6 +42,21 @@ jobs:
         run: npm run build:mobile
       - name: Prepare Android project
         run: node scripts/setup-android.mjs
+      - name: Build Play preparation bundle (unsigned)
+        working-directory: android
+        run: ./gradlew bundleRelease --no-daemon
+      - name: Upload Play preparation bundle
+        uses: actions/upload-artifact@v4
+        with:
+          name: ZORILAD-play-preparation-unsigned
+          path: android/app/build/outputs/bundle/release/app-release.aab
+      - name: Prepare owner review build
+        env:
+          VITE_OWNER_REVIEW: 'true'
+        run: |
+          rm -rf android
+          npm run build:mobile
+          node scripts/setup-android.mjs
       - name: Build debug APK
         working-directory: android
         run: ./gradlew assembleDebug --no-daemon
@@ -49,14 +64,14 @@ jobs:
         run: |
           test -s android/app/build/outputs/apk/debug/app-debug.apk
           unzip -t android/app/build/outputs/apk/debug/app-debug.apk
-          sha256sum android/app/build/outputs/apk/debug/app-debug.apk | tee ZORILAD-test.sha256
-          cp android/app/build/outputs/apk/debug/app-debug.apk ZORILAD-test.apk
+          sha256sum android/app/build/outputs/apk/debug/app-debug.apk | tee ZORILAD-owner.sha256
+          cp android/app/build/outputs/apk/debug/app-debug.apk ZORILAD-owner.apk
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
-          name: ZORILAD-test-apk
+          name: ZORILAD-owner-apk
           path: |
-            ZORILAD-test.apk
-            ZORILAD-test.sha256
+            ZORILAD-owner.apk
+            ZORILAD-owner.sha256
           if-no-files-found: error
           retention-days: 14

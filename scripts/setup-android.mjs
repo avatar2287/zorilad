@@ -30,4 +30,4 @@ const wrapper = join(root, 'android/gradle/wrapper/gradle-wrapper.properties');
 writeFileSync(wrapper, readFileSync(wrapper, 'utf8')
   .replace('-all.zip', '-bin.zip')
   .replace('networkTimeout=10000', 'networkTimeout=120000'));
-console.log('Offline TEST Android project prepared; real billing is not implemented.');
+console.log('Android project prepared. Play Billing integration is still required for paid release.');

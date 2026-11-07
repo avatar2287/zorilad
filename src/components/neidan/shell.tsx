@@ -168,13 +168,12 @@ function Gate({
   );
 }
 
-function Home({ lang, onLang, play, testMode = false }: { lang: Lang; onLang: (lang: Lang) => void; play: boolean; testMode?: boolean }) {
+function Home({ lang, onLang, play, ownerReview = false }: { lang: Lang; onLang: (lang: Lang) => void; play: boolean; ownerReview?: boolean }) {
   const text = copy[lang];
   const [focus, setFocus] = useState<(typeof scrolls)[number]["id"] | null>(null);
   const [page, setPage] = useState<"water" | "fire" | "wood" | "earth" | "ether" | null>(null);
-  const [owned, setOwned] = useState(false);
-  const [pay, setPay] = useState(false);
-  const accessKey = testMode ? "zorilad-test-ether" : "zorilad-ether";
+  // Never trust legacy localStorage demo/purchase flags.
+  const owned = ownerReview;
   const order = ["water", "fire", "earth", "wood", "metal"] as const;
   const sub = {
     water: text.waterSub,
@@ -184,9 +183,6 @@ function Home({ lang, onLang, play, testMode = false }: { lang: Lang; onLang: (l
     metal: owned ? text.metalOpen : text.metalSub,
   };
 
-  useEffect(() => {
-    try { setOwned(window.localStorage.getItem(accessKey) === "1"); } catch { /* Session-only if storage is unavailable. */ }
-  }, [accessKey]);
 
   return (
     <div className={`relative h-dvh overflow-hidden bg-[#05070b] text-moon ${focus ? "is-choosing" : ""}`}>
@@ -244,7 +240,7 @@ function Home({ lang, onLang, play, testMode = false }: { lang: Lang; onLang: (l
               <span className={`plaque plaque-${id}`}>
                 <span className="plaque-title">{text[id]}</span>
                 <span className="plaque-sub">{sub[id]}</span>
-                {id === "metal" ? <span className="plaque-price">{testMode ? "TEST • Demo" : text.access}</span> : null}
+                {id === "metal" ? <span className="plaque-price">{owned ? text.bought : (lang === "ru" ? "🔒 Полный доступ" : "🔒 Full access")}</span> : null}
               </span>
             </button>
           );
@@ -285,11 +281,6 @@ function Home({ lang, onLang, play, testMode = false }: { lang: Lang; onLang: (l
           lang={lang}
           onLang={onLang}
           owned={owned}
-          testMode={testMode}
-          onUnlock={() => {
-            try { window.localStorage.setItem(accessKey, "1"); } catch { /* Keep access for this session. */ }
-            setOwned(true);
-          }}
           onClose={() => setPage(null)}
         />
       ) : null}
@@ -312,34 +303,12 @@ function Home({ lang, onLang, play, testMode = false }: { lang: Lang; onLang: (l
           </button>
         </div>
       ) : null}
-      {pay ? (
-        <div className="sheet" role="dialog">
-          <button type="button" className="sheet-scrim" aria-label={text.later} onClick={() => setPay(false)} />
-          <div className="sheet-card">
-            <h2 className="font-display text-2xl leading-none">{text.metal}</h2>
-            <p className="mt-3 text-sm leading-relaxed text-paper">{text.access}</p>
-            <button
-              type="button"
-              className="sheet-ok"
-              onClick={() => {
-                try { window.localStorage.setItem(accessKey, "1"); } catch { /* Keep access for this session. */ }
-                setOwned(true);
-                setPay(false);
-              }}
-            >
-              {text.buy}
-            </button>
-            <button type="button" className="glass-back mt-3" onClick={() => setPay(false)}>
-              {text.later}
-            </button>
-          </div>
-        </div>
-      ) : null}
+
     </div>
   );
 }
 
-export function NeiDanShell({ testMode = false }: { testMode?: boolean } = {}) {
+export function NeiDanShell({ ownerReview = false }: { ownerReview?: boolean } = {}) {
   const [entered, setEntered] = useState(false);
   const [lang, setLang] = useState<Lang>("ru");
 
@@ -358,7 +327,7 @@ export function NeiDanShell({ testMode = false }: { testMode?: boolean } = {}) {
   return (
     <div className="relative h-dvh overflow-hidden bg-night">
       {entered ? (
-        <Home lang={lang} onLang={choose} play testMode={testMode} />
+        <Home lang={lang} onLang={choose} play ownerReview={ownerReview} />
       ) : (
         <Gate lang={lang} onLang={choose} onEnter={() => setEntered(true)} />
       )}
