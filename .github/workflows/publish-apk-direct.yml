@@ -6,6 +6,14 @@ on:
       - audit/android-test-2026-11-05
     paths:
       - .github/workflows/publish-apk-direct.yml
+      - package.json
+      - package-lock.json
+      - capacitor.config.ts
+      - vite.mobile.config.ts
+      - mobile/**
+      - public/**
+      - scripts/**
+      - src/**
   workflow_dispatch:
 
 permissions:
